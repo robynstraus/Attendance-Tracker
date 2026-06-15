@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Office Attendance Tracker</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f5f5f3;
+    --bg-tertiary: #eeede9;
+    --text-primary: #1a1a18;
+    --text-secondary: #6b6b67;
+    --text-tertiary: #9e9e9a;
+    --border-light: rgba(0,0,0,0.1);
+    --border-mid: rgba(0,0,0,0.18);
+    --border-strong: rgba(0,0,0,0.28);
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --green-bg: #EAF3DE;
+    --green-border: #639922;
+    --green-text: #3B6D11;
+    --blue-bg: #E6F1FB;
+    --blue-border: #378ADD;
+    --blue-text: #185FA5;
+    --amber-bg: #FAEEDA;
+    --amber-border: #EF9F27;
+    --amber-text: #854F0B;
+    --red-text: #A32D2D;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-primary: #1e1e1c;
+      --bg-secondary: #2a2a27;
+      --bg-tertiary: #323230;
+      --text-primary: #f0efe9;
+      --text-secondary: #a8a8a2;
+      --text-tertiary: #6e6e6a;
+      --border-light: rgba(255,255,255,0.08);
+      --border-mid: rgba(255,255,255,0.14);
+      --border-strong: rgba(255,255,255,0.22);
+      --green-bg: #1a2e10;
+      --green-border: #3B6D11;
+      --green-text: #97C459;
+      --blue-bg: #0d1f35;
+      --blue-border: #185FA5;
+      --blue-text: #85B7EB;
+      --amber-bg: #2a1e08;
+      --amber-border: #854F0B;
+      --amber-text: #FAC775;
+      --red-text: #F09595;
+    }
+  }
+
+  html, body {
+    min-height: 100vh;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+  }
+
+  header {
+    margin-bottom: 2rem;
+  }
+
+  header h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  header p {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .top-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 1.25rem;
+  }
+
+  .stat {
+    background: var(--bg-primary);
+    border: 0.5px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 0.875rem 1rem;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+
+  .stat-num {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+
+  .stat-sub {
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+
+  .progress-card {
+    background: var(--bg-primary);
+    border: 0.5px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 1.125rem 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+
+  .progress-header-left {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .progress-pct {
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .progress-bar-wrap {
+    height: 8px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    overflow: visible;
+    position: relative;
+    margin-bottom: 20px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+    max-width: 100%;
+  }
+
+  .progress-target-marker {
+    position: absolute;
+    left: 60%;
+    top: -4px;
+    width: 2px;
+    height: 16px;
+    background: var(--text-tertiary);
+    border-radius: 1px;
+  }
+
+  .progress-target-label {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+  }
+
+  .progress-detail {
+    display: flex;
+    gap: 20px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    flex-wrap: wrap;
+  }
+
+  .legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-primary);
+    border: 0.5px solid var(--border-light);
+    border-radius: var(--radius-md);
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    border: 0.5px solid var(--border-mid);
+    flex-shrink: 0;
+  }
+
+  .cal-card {
+    background: var(--bg-primary);
+    border: 0.5px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+  }
+
+  .cal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+
+  .cal-nav button {
+    background: none;
+    border: 0.5px solid var(--border-mid);
+    border-radius: var(--radius-md);
+    padding: 7px 14px;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: background 0.1s;
+  }
+
+  .cal-nav button:hover { background: var(--bg-secondary); }
+
+  .cal-title {
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+  }
+
+  .cal-dow {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    text-align: center;
+    padding: 4px 0 8px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+  }
+
+  .cal-day {
+    border-radius: 6px;
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 0.5px solid transparent;
+    transition: border-color 0.12s, background 0.12s;
+    min-height: 38px;
+    position: relative;
+    gap: 2px;
+  }
+
+  .cal-day:hover:not(.non-interactive) {
+    border-color: var(--border-strong);
+    background: var(--bg-secondary);
+  }
+
+  .non-interactive { cursor: default !important; }
+
+  .cal-day.cal-weekend { opacity: 0.3; cursor: default; }
+  .cal-day.cal-before { opacity: 0.2; cursor: default; }
+  .cal-day.cal-future { opacity: 0.4; cursor: default; }
+
+  .cal-day.cal-holiday {
+    background: var(--bg-secondary);
+    cursor: default;
+  }
+
+  .cal-day.cal-in { background: var(--green-bg); }
+  .cal-day.cal-in .day-num { color: var(--green-text); font-weight: 600; }
+
+  .cal-day.cal-wfh { background: var(--blue-bg); }
+  .cal-day.cal-wfh .day-num { color: var(--blue-text); font-weight: 600; }
+
+  .cal-day.cal-vac { background: var(--amber-bg); }
+  .cal-day.cal-vac .day-num { color: var(--amber-text); font-weight: 600; }
+
+  .cal-day.cal-today { border-color: var(--border-strong) !important; }
+  .cal-day.cal-today .day-num { font-weight: 700; }
+
+  .day-num { font-size: 13px; line-height: 1; color: var(--text-primary); }
+  .day-dot { width: 4px; height: 4px; border-radius: 50%; }
+  .cal-in .day-dot { background: var(--green-border); }
+  .cal-wfh .day-dot { background: var(--blue-border); }
+  .cal-vac .day-dot { background: var(--amber-border); }
+
+  .hol-label {
+    font-size: 8px;
+    color: var(--text-tertiary);
+    text-align: center;
+    line-height: 1.1;
+    max-width: 90%;
+    overflow: hidden;
+    padding: 0 2px;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 1rem;
+  }
+
+  .modal {
+    background: var(--bg-primary);
+    border: 0.5px solid var(--border-mid);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 300px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  }
+
+  .modal h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 3px;
+  }
+
+  .modal-date {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 1.25rem;
+  }
+
+  .modal-btns { display: flex; flex-direction: column; gap: 8px; }
+
+  .modal-btn {
+    padding: 11px 14px;
+    border-radius: var(--radius-md);
+    border: 0.5px solid var(--border-mid);
+    cursor: pointer;
+    font-size: 14px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background 0.1s;
+    width: 100%;
+    font-family: inherit;
+  }
+
+  .modal-btn:hover { background: var(--bg-secondary); }
+  .modal-btn i { font-size: 18px; }
+
+  .modal-btn.opt-in { background: var(--green-bg); border-color: var(--green-border); color: var(--green-text); }
+  .modal-btn.opt-wfh { background: var(--blue-bg); border-color: var(--blue-border); color: var(--blue-text); }
+  .modal-btn.opt-vac { background: var(--amber-bg); border-color: var(--amber-border); color: var(--amber-text); }
+  .modal-btn.opt-clear { background: var(--bg-secondary); }
+
+  .modal-cancel {
+    margin-top: 10px;
+    padding: 8px;
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 13px;
+    width: 100%;
+    border-radius: var(--radius-md);
+    font-family: inherit;
+  }
+  .modal-cancel:hover { background: var(--bg-secondary); }
+
+  @media (max-width: 540px) {
+    .top-stats { grid-template-columns: repeat(2, 1fr); }
+    .stat-num { font-size: 20px; }
+    .cal-day { min-height: 32px; }
+    .day-num { font-size: 11px; }
+    .hol-label { display: none; }
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 2rem;
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1>Office attendance tracker</h1>
+    <p id="header-sub">Tracking from June 8, 2026 · 60% in-office target · click any workday to log it</p>
+  </header>
+
+  <div class="top-stats" id="stats"></div>
+
+  <div class="progress-card">
+    <div class="progress-header">
+      <span class="progress-header-left">In-office rate <span style="font-size:11px">(vacation = WFH in calculation)</span></span>
+      <span class="progress-pct" id="pct-label">—</span>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-fill" id="prog-fill" style="width:0%"></div>
+      <div class="progress-target-marker">
+        <span class="progress-target-label">60% target</span>
+      </div>
+    </div>
+    <div class="progress-detail" id="prog-detail"></div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--green-bg);border-color:var(--green-border)"></div> In office</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--blue-bg);border-color:var(--blue-border)"></div> WFH / out of office</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--amber-bg);border-color:var(--amber-border)"></div> Vacation</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--bg-secondary)"></div> Firm holiday</div>
+  </div>
+
+  <div class="cal-card">
+    <div class="cal-nav">
+      <button onclick="changeMonth(-1)" aria-label="Previous month"><i class="ti ti-chevron-left"></i></button>
+      <span class="cal-title" id="cal-title"></span>
+      <button onclick="changeMonth(1)" aria-label="Next month"><i class="ti ti-chevron-right"></i></button>
+    </div>
+    <div class="cal-grid" id="cal"></div>
+  </div>
+
+  <footer>Data saved in your browser · <a href="#" onclick="exportData(); return false;" style="color:var(--text-tertiary)">export data</a> · <a href="#" onclick="importData(); return false;" style="color:var(--text-tertiary)">import data</a></footer>
+</div>
+
+<div id="modal-root"></div>
+
+<script>
+const START = new Date(2026, 5, 8);
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+
+// Holiday calculations
+function getNthMonday(y, m, n) {
+  let d = new Date(y, m, 1);
+  let offset = (1 - d.getDay() + 7) % 7;
+  return new Date(y, m, 1 + offset + (n - 1) * 7);
+}
+function getLastMonday(y, m) {
+  let d = new Date(y, m + 1, 0);
+  while (d.getDay() !== 1) d.setDate(d.getDate() - 1);
+  return d;
+}
+function getNthThursday(y, m, n) {
+  let d = new Date(y, m, 1);
+  let offset = (4 - d.getDay() + 7) % 7;
+  return new Date(y, m, 1 + offset + (n - 1) * 7);
+}
+function getJuly4Obs(y) {
+  let d = new Date(y, 6, 4);
+  if (d.getDay() === 6) return new Date(y, 6, 3);
+  if (d.getDay() === 0) return new Date(y, 6, 5);
+  return d;
+}
+function getHolidays(y) {
+  let tg = getNthThursday(y, 10, 4);
+  let tgFri = new Date(tg); tgFri.setDate(tg.getDate() + 1);
+  return [
+    { date: new Date(y, 0, 1),  name: "New Year's" },
+    { date: getNthMonday(y, 0, 3), name: "MLK Day" },
+    { date: getNthMonday(y, 1, 3), name: "Presidents' Day" },
+    { date: getLastMonday(y, 4),   name: "Memorial Day" },
+    { date: new Date(y, 5, 19),    name: "Juneteenth" },
+    { date: getJuly4Obs(y),        name: "July 4" },
+    { date: getNthMonday(y, 8, 1), name: "Labor Day" },
+    { date: tg,                    name: "Thanksgiving" },
+    { date: tgFri,                 name: "Day after TG" },
+    { date: new Date(y, 11, 25),   name: "Christmas" },
+  ];
+}
+
+function dKey(d) { return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+
+// Holiday lookup (cache per year)
+const holCache = {};
+function getHolMap(y) {
+  if (!holCache[y]) {
+    holCache[y] = {};
+    getHolidays(y).forEach(h => { holCache[y][dKey(h.date)] = h.name; });
+  }
+  return holCache[y];
+}
+function isHoliday(d) {
+  return getHolMap(d.getFullYear())[dKey(d)];
+}
+function isWeekend(d) { return d.getDay() === 0 || d.getDay() === 6; }
+
+// Data persistence
+function loadData() {
+  try { return JSON.parse(localStorage.getItem('office_tracker_v2') || '{}'); } catch (e) { return {}; }
+}
+function saveData(data) {
+  try { localStorage.setItem('office_tracker_v2', JSON.stringify(data)); } catch (e) {}
+}
+
+let data = loadData();
+let viewYear = TODAY.getFullYear();
+let viewMonth = TODAY.getMonth();
+
+// Stats computation
+function computeStats() {
+  let d = new Date(START);
+  let inOff = 0, wfh = 0, vac = 0, unlogged = 0, holidays = 0;
+  while (d <= TODAY) {
+    if (!isWeekend(d)) {
+      if (isHoliday(d)) holidays++;
+      else {
+        let v = data[dKey(d)];
+        if (v === 'in') inOff++;
+        else if (v === 'wfh') wfh++;
+        else if (v === 'vac') vac++;
+        else unlogged++;
+      }
+    }
+    d.setDate(d.getDate() + 1);
+  }
+  let logged = inOff + wfh + vac;
+  let pct = logged > 0 ? Math.round(inOff / logged * 100) : null;
+  // How many more in-office days needed to hit 60%?
+  // If pct < 60, need X more: (inOff + X) / (logged + X + unlogged) >= 0.6
+  // X >= (0.6*(logged+unlogged) - inOff) / 0.4
+  let needed = null;
+  if (unlogged > 0 && (pct === null || pct < 60)) {
+    let x = Math.ceil((0.6 * (logged + unlogged) - inOff) / 0.4);
+    needed = Math.max(0, x);
+  }
+  return { inOff, wfh, vac, unlogged, holidays, pct, logged, needed };
+}
+
+function renderStats() {
+  let s = computeStats();
+  let pctColor = s.pct === null ? 'var(--text-secondary)' : s.pct >= 60 ? 'var(--green-text)' : 'var(--red-text)';
+  document.getElementById('stats').innerHTML = `
+    <div class="stat">
+      <div class="stat-label">In office</div>
+      <div class="stat-num" style="color:var(--green-text)">${s.inOff}</div>
+      <div class="stat-sub">days logged</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">WFH / out</div>
+      <div class="stat-num" style="color:var(--blue-text)">${s.wfh}</div>
+      <div class="stat-sub">days logged</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Vacation</div>
+      <div class="stat-num" style="color:var(--amber-text)">${s.vac}</div>
+      <div class="stat-sub">days used</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Unlogged</div>
+      <div class="stat-num">${s.unlogged}</div>
+      <div class="stat-sub">work days</div>
+    </div>
+  `;
+
+  let pctTxt = s.pct === null ? '—' : s.pct + '%';
+  let pctEl = document.getElementById('pct-label');
+  pctEl.textContent = pctTxt;
+  pctEl.style.color = pctColor;
+
+  let fill = document.getElementById('prog-fill');
+  let pctW = s.pct === null ? 0 : Math.min(s.pct, 100);
+  fill.style.width = pctW + '%';
+  fill.style.background = s.pct === null ? 'var(--text-tertiary)' : s.pct >= 60 ? 'var(--green-border)' : '#E24B4A';
+
+  let detail = [];
+  if (s.logged > 0) detail.push(`${s.logged} days logged (${s.inOff} in + ${s.wfh + s.vac} not in)`);
+  if (s.unlogged > 0) detail.push(`${s.unlogged} unlogged`);
+  if (s.needed !== null && s.needed > 0) detail.push(`need ${s.needed} more in-office days to hit 60%`);
+  if (s.pct >= 60) detail.push('✓ on track');
+  document.getElementById('prog-detail').innerHTML = detail.map(t => `<span>${t}</span>`).join('');
+}
+
+function renderCal() {
+  document.getElementById('cal-title').textContent =
+    new Date(viewYear, viewMonth, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  let dows = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+  let html = dows.map(d => `<div class="cal-dow">${d}</div>`).join('');
+
+  let first = new Date(viewYear, viewMonth, 1);
+  let startDow = first.getDay();
+  for (let i = 0; i < startDow; i++) html += `<div></div>`;
+
+  let daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  let holMap = getHolMap(viewYear);
+
+  for (let dd = 1; dd <= daysInMonth; dd++) {
+    let d = new Date(viewYear, viewMonth, dd);
+    let key = dKey(d);
+    let isToday = key === dKey(TODAY);
+    let holName = holMap[key];
+    let wknd = isWeekend(d);
+    let before = d < START;
+    let fut = d > TODAY;
+    let val = data[key];
+
+    let cls = 'cal-day';
+    let inner = `<span class="day-num">${dd}</span>`;
+
+    if (before) {
+      cls += ' cal-before non-interactive';
+    } else if (wknd) {
+      cls += ' cal-weekend non-interactive';
+    } else if (holName) {
+      cls += ' cal-holiday non-interactive';
+      inner += `<span class="hol-label">${holName}</span>`;
+    } else if (fut) {
+      cls += ' cal-future non-interactive';
+    } else {
+      if (val === 'in') { cls += ' cal-in'; inner += '<div class="day-dot"></div>'; }
+      else if (val === 'wfh') { cls += ' cal-wfh'; inner += '<div class="day-dot"></div>'; }
+      else if (val === 'vac') { cls += ' cal-vac'; inner += '<div class="day-dot"></div>'; }
+    }
+    if (isToday) cls += ' cal-today';
+
+    let canClick = !before && !wknd && !holName && !fut;
+    let dateStr = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    let onclick = canClick ? `onclick="openModal('${key}','${dateStr}','${val||''}')"` : '';
+
+    html += `<div class="${cls}" ${onclick}>${inner}</div>`;
+  }
+
+  document.getElementById('cal').innerHTML = html;
+}
+
+function openModal(key, label, cur) {
+  document.getElementById('modal-root').innerHTML = `
+    <div class="modal-overlay" id="mo" onclick="overlayClick(event)">
+      <div class="modal">
+        <h3>Log this day</h3>
+        <p class="modal-date">${label}</p>
+        <div class="modal-btns">
+          <button class="modal-btn ${cur==='in'?'opt-in':''}" onclick="setDay('${key}','in')">
+            <i class="ti ti-building"></i> In office
+          </button>
+          <button class="modal-btn ${cur==='wfh'?'opt-wfh':''}" onclick="setDay('${key}','wfh')">
+            <i class="ti ti-home"></i> WFH / out of office
+          </button>
+          <button class="modal-btn ${cur==='vac'?'opt-vac':''}" onclick="setDay('${key}','vac')">
+            <i class="ti ti-palm-tree"></i> Vacation
+          </button>
+          ${cur ? `<button class="modal-btn opt-clear" onclick="setDay('${key}','')"><i class="ti ti-x"></i> Clear</button>` : ''}
+        </div>
+        <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>`;
+}
+
+function overlayClick(e) { if (e.target.id === 'mo') closeModal(); }
+function closeModal() { document.getElementById('modal-root').innerHTML = ''; }
+
+function setDay(key, val) {
+  if (!val) delete data[key]; else data[key] = val;
+  saveData(data);
+  closeModal();
+  renderStats();
+  renderCal();
+}
+
+function changeMonth(dir) {
+  viewMonth += dir;
+  if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+  if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+  renderCal();
+}
+
+// Export / import for backup
+function exportData() {
+  let blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  let a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'office-tracker-backup.json';
+  a.click();
+}
+
+function importData() {
+  let input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = e => {
+    let file = e.target.files[0];
+    let reader = new FileReader();
+    reader.onload = r => {
+      try {
+        let imported = JSON.parse(r.result);
+        data = imported;
+        saveData(data);
+        renderStats();
+        renderCal();
+        alert('Data imported successfully.');
+      } catch (err) { alert('Could not read file. Make sure it\'s a valid backup JSON.'); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+// Keyboard: close modal on Escape
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// Init
+renderStats();
+renderCal();
+</script>
+</body>
+</html>
